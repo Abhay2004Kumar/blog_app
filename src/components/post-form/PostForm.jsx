@@ -1,84 +1,82 @@
-import React,{useCallback, useEffect} from 'react'
-import { useForm } from 'react-hook-form'
-import {Button, Input, Select, RTE} from '../index'
-import service from '../../appwrite/config'
-import { useNavigate } from 'react-router-dom'
-import { useSelector } from 'react-redux'
+import React, { useCallback } from "react";
+import { useForm } from "react-hook-form";
+import { Button, Input, RTE, Select } from "..";
+import service  from "../../appwrite/config";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
-function PostForm({post}) {
-    const {register, handleSubmit, watch, setValue, control, getValues} = useForm({
+export default function PostForm({ post }) {
+    const { register, handleSubmit, watch, setValue, control, getValues } = useForm({
         defaultValues: {
-            title: post?.title || '',
-            slug: post?.slug || '',
-            content: post?.content || '',
-            status: post?.status || 'active'
-        
-           
+            title: post?.title || "",
+            slug: post?.slug || "",
+            content: post?.content || "",
+            status: post?.status || "active",
         },
-    })
+    });
 
-    const navigate = useNavigate()
-    const userData = useSelector(state =>   state.user.userData)
+    const navigate = useNavigate();
+    const userData = useSelector((state) => state.auth.userData);
 
-    const submit = async(data) => {
-        if(post){
-            const file = data.image[0] ? service.uploadFile(data.image[0]) : null;
-            if(file){
-                service.deleteFile(post.imageUrl)
+    const submit = async (data) => {
+        if (post) {
+            const file = data.image[0] ? await service.uploadFile(data.image[0]) : null;
+
+            if (file) {
+                service.deleteFile(post.imageUrl);
             }
-            const dbPost = await service.updatePost(post.$id,{
+
+            const dbPost = await service.updatePost(post.$id, {
                 ...data,
-                imageUrl: file ? file.$id : undefined
-            })
-            if(dbPost){
-                navigate(`/post/${dbPost.$id}`)
-            }
-        }
-        else{
-            const file = await service.uploadFile(data.image[0])
-            if(file){
-                const fileId = file.$id
-                data.imageUrl = fileId
-                const dbPost =  await service.createPost({
-                    ...data,
-                    userId: userData.$id,
+                imageUrl: file ? file.$id : undefined,
+            });
 
-                })
-                if(dbPost){
-                    navigate(`/post/${dbPost.$id}`)
+            if (dbPost) {
+                navigate(`/post/${dbPost.$id}`);
+            }
+        } else {
+            const file = await service.uploadFile(data.image[0]);
+
+            if (file) {
+                const fileId = file.$id;
+                data.imageUrl = fileId;
+                console.log("ImageUrl: ",data.imageUrl);
+                const dbPost = await service.createPost({ ...data,
+                     userId: userData.$id });
+
+                if (dbPost) {
+                    navigate(`/post/${dbPost.$id}`);
                 }
             }
         }
+    };
 
-        
-    }
 
+
+    
     const slugTransform = useCallback((value) => {
-        if(value && typeof value === 'string'){
-            return value.trim()
-            .toLowerCase()
-            .replace(/^[a-zA-Z\d\s]+/g,'-')
-            .replace(/\s/g, '-')
+        if (value && typeof value === "string")
+            return value
+                .trim()
+                .toLowerCase()
+                .replace(/[^a-zA-Z\d\s]+/g, "-")
+                .replace(/\s/g, "-");
 
-        }
-        return ''
-    },[])
+        return "";
+    }, []);
 
-    useEffect(() => {
-        const subscription = watch((value, {name}) => {
-            if(name ==='title'){
-                setValue('slug',slugTransform(value.title,
-                    {shouldValidate: true}
-                ))
+    React.useEffect(() => {
+        const subscription = watch((value, { name }) => {
+            if (name === "title") {
+                setValue("slug", slugTransform(value.title), { shouldValidate: true });
             }
-        })
+        });
 
-        return () => {
-            subscription.unsubscribe()
-        }
-    }, [watch, slugTransform, setValue])
-  return (
-    <form onSubmit={handleSubmit(submit)} className="flex flex-wrap">
+        return () => subscription.unsubscribe();
+    }, [watch, slugTransform, setValue]);
+
+    return (
+        <form onSubmit={handleSubmit(submit)} className="flex flex-wrap">
             <div className="w-2/3 px-2">
                 <Input
                     label="Title :"
@@ -99,7 +97,7 @@ function PostForm({post}) {
             </div>
             <div className="w-1/3 px-2">
                 <Input
-                    label="ImageUrl :"
+                    label="Featured Image :"
                     type="file"
                     className="mb-4"
                     accept="image/png, image/jpg, image/jpeg, image/gif"
@@ -125,7 +123,5 @@ function PostForm({post}) {
                 </Button>
             </div>
         </form>
-  )
+    );
 }
-
-export default PostForm
