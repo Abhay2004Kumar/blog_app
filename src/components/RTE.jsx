@@ -6,6 +6,8 @@ import conf from '../conf/conf.js'
 
 export default function RTE({name, control, label,
     defaultValue=""}) {
+        const apiKey = import.meta.env.VITE_MCE_API_KEY
+
   return (
     <div className='w-full'>
         {label && <label className='inline-block mb-1 pl-1'>{label}</label>}
@@ -15,6 +17,7 @@ export default function RTE({name, control, label,
     control={control}
     render={({field: {onChange}}) => (
         <Editor
+       apiKey={apiKey} 
         initialValue={defaultValue}
         init={{
             initialValue: defaultValue,
