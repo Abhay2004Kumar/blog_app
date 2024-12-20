@@ -83,8 +83,8 @@ The app will be available at `http://localhost:5173`.
 ## Screenshots
 
 ### Home Page
-![Home Page](![Alt text](image.png))
+![Alt text](image.png)
 
 ### Blog Editor
-![Blog Editor](https://via.placeholder.com/800x400?text=Blog+Editor)
+![Alt text](image-1.png)
 
